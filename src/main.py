@@ -1,15 +1,11 @@
 from fastapi import FastAPI
 from routes import accounts_router
 
+
 app = FastAPI(
-    title="Cinema Project",
-    description="Digital platform that allows users to select, watch, and purchase access to movies "
-                "and other video materials via the internet",
+    title="Online Cinema",
+    description="Online cinema FastApi project!!!",
+    version="0.1.0"
 )
 
-
-api_version_prefix = "/api/v1"
-
-
-
-app.include_router(accounts_router, prefix=f"{api_version_prefix}/accounts", tags=["accounts"])
+app.include_router(accounts_router, tags=["accounts"])
