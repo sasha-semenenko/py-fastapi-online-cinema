@@ -41,3 +41,13 @@ class UserActivationRequestSchema(BaseModel):
 
 class MessageResponseSchema(BaseModel):
     message: str
+
+
+class UserLoginRequestSchema(BaseUserSchema):
+    pass
+
+
+class UserLoginResponseSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
