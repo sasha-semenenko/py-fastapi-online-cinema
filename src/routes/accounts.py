@@ -4,16 +4,33 @@ from typing import cast
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.orm import joinedload
 
 from config.dependencies import get_settings, get_jwt_auth_manager
 from config.settings import Settings
 from database.postgres_session import get_postgres_db
 from exception.security import BaseSecurityError
-from models.accounts import UserModel, UserGroupModel, UserGroupEnum, ActivationTokenModel, RefreshTokenModel
-from schemas.accounts import UserRequestSchema, UserResponseSchema, MessageResponseSchema, UserActivationRequestSchema, \
-    UserLoginResponseSchema, UserLoginRequestSchema, TokenRefreshResponseSchema, TokenRefreshRequestSchema
+from models.accounts import (
+    UserModel,
+    UserGroupModel,
+    UserGroupEnum,
+    ActivationTokenModel,
+    RefreshTokenModel,
+    PasswordResetTokenModel
+)
+from schemas.accounts import (
+    UserRequestSchema,
+    UserResponseSchema,
+    MessageResponseSchema,
+    UserActivationRequestSchema,
+    UserLoginResponseSchema,
+    UserLoginRequestSchema,
+    TokenRefreshResponseSchema,
+    TokenRefreshRequestSchema,
+    PasswordResetRequestSchema,
+    PasswordResetRequestCompleteSchema
+)
 from security.interfaces import JWTAuthManagerInterface
 from security.token_manager import JWTAuthManager
 
@@ -226,7 +243,7 @@ async def login_user(
         db: AsyncSession = Depends(get_postgres_db),
         settings: Settings = Depends(get_settings),
         jwt_manager: JWTAuthManagerInterface = Depends(get_jwt_auth_manager),
-):
+) -> UserLoginResponseSchema:
     request = await db.execute(select(UserModel).filter_by(email=login_data.email))
     user = request.scalars().one_or_none()
 
@@ -312,7 +329,7 @@ async def refresh_access_token(
         token_data: TokenRefreshRequestSchema,
         db: AsyncSession = Depends(get_postgres_db),
         jwt_manager: JWTAuthManager = Depends(get_jwt_auth_manager),
-):
+) -> TokenRefreshResponseSchema:
     """
         Endpoint to refresh an access token.
 
@@ -362,3 +379,157 @@ async def refresh_access_token(
 
     access_token = jwt_manager.create_access_token({"user_id": user.id})
     return TokenRefreshResponseSchema(access_token=access_token)
+
+
+@router.post(
+    "/reset_token/request",
+    response_model=MessageResponseSchema,
+    summary="Request password reset token",
+    description="Allow a user to request a password reset token. If the user is exist and is active, "
+                "a new token will be generated and any existing token will be invalidated",
+    status_code=status.HTTP_200_OK
+)
+async def reset_password_request(
+        data: PasswordResetRequestSchema,
+        db: AsyncSession = Depends(get_postgres_db)
+) -> MessageResponseSchema:
+    """
+        Endpoint to request a password reset token.
+
+        If the user exists and is active, invalidates any existing password reset tokens and generates a new one.
+        Always responds with a success message to avoid leaking user information.
+
+        Args:
+            data (PasswordResetRequestSchema): The request data containing the user's email.
+            db (AsyncSession): The asynchronous database session.
+
+        Returns:
+            MessageResponseSchema: A success message indicating that instructions will be sent.
+        """
+    request = await db.execute(select(UserModel).filter_by(email=data.email))
+    user = request.scalars().one_or_none()
+
+    if not user or not user.is_active:
+        return MessageResponseSchema(
+            message="If you are registered, you will receive an email with instructions."
+        )
+
+    await db.execute(delete(PasswordResetTokenModel).where(PasswordResetTokenModel.user_id == user.id))
+
+    reset_token = PasswordResetTokenModel(user_id=cast(int, user.id))
+    db.add(reset_token)
+    await db.commit()
+
+    return MessageResponseSchema(
+        message="If you are registered, you will receive an email with instructions."
+    )
+
+
+@router.post(
+    "/password_reset/complete",
+    response_model=MessageResponseSchema,
+    summary="Reset password",
+    description="Reset a user's password if a valid token is provided",
+    responses={
+        400: {
+            "description": (
+                    "Bad request - the provided email or token is not valid, " 
+                    "the token is expired or account is not active."
+
+            ),
+            "content": {
+                "application/json": {
+                    "examples": {
+                        "invalid_email_or_token": {
+                            "summary": "Invalid Email or Token",
+                            "value": {
+                                "detail": "Invalid email or token."
+                            }
+                        },
+                        "expired_token": {
+                            "summary": "Expired Token",
+                            "value": {
+                                "detail": "Invalid email or token."
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        500: {
+            "description": "Internal Server Error - An error occurred while resetting the password.",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "detail": "An error occurred while resetting the password."
+                    }
+                }
+            }
+        }
+    },
+)
+async def password_reset_complete(
+        data: PasswordResetRequestCompleteSchema,
+        db: AsyncSession = Depends(get_postgres_db)
+) -> MessageResponseSchema:
+    """
+        Endpoint for resetting a user's password.
+
+        Validates the token and updates the user's password if the token is valid and not expired.
+        Deletes the token after a successful password reset.
+
+        Args:
+            data (PasswordResetCompleteRequestSchema): The request data containing the user's email,
+            token, and new password.
+            db (AsyncSession): The asynchronous database session.
+
+        Returns:
+            MessageResponseSchema: A response message indicating successful password reset.
+
+        Raises:
+            HTTPException:
+                - 400 Bad Request if the email or token is invalid, or the token has expired.
+                - 500 Internal Server Error if an error occurs during the password reset process.
+        """
+    request = await db.execute(select(UserModel).filter_by(email=data.email))
+    user = request.scalars().one_or_none()
+
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="User is not active"
+        )
+
+    request_complete = await db.execute(select(PasswordResetTokenModel).filter_by(user_id=user.id))
+    token_record = request_complete.scalars().one_or_none()
+
+    if not token_record or token_record.token != data.token:
+        if token_record:
+            await db.run_sync(lambda s: s.delete(token_record))
+            await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid token or token does not exist in database."
+        )
+
+    expired_at = cast(datetime, token_record.expires_at).replace(tzinfo=timezone.utc)
+    if expired_at < datetime.now(timezone.utc):
+        await db.run_sync(lambda s: s.delete(token_record))
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid datetime of token."
+        )
+
+    try:
+        user.password = data.password
+        await db.run_sync(lambda s: s.delete(token_record))
+        await db.commit()
+    except SQLAlchemyError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while resetting the password."
+        )
+
+    return MessageResponseSchema(message="Password reset successfully.")

@@ -60,3 +60,9 @@ class TokenRefreshResponseSchema(BaseModel):
 
 class TokenRefreshRequestSchema(BaseUserSchema):
     refresh_token: str
+
+class PasswordResetRequestCompleteSchema(BaseUserSchema):
+    token: str
+
+class PasswordResetRequestSchema(BaseModel):
+    email: EmailStr
