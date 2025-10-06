@@ -1,10 +1,11 @@
 from fastapi.params import Depends
 
-from config.settings import Settings
-from notifications.emails import EmailSender
-from notifications.interfaces import EmailSenderInterface
-from security.interfaces import JWTAuthManagerInterface
-from security.token_manager import JWTAuthManager
+from src.config.settings import Settings
+from src.notifications.emails import EmailSender
+from src.notifications.interfaces import EmailSenderInterface
+from src.security.interfaces import JWTAuthManagerInterface
+from src.security.token_manager import JWTAuthManager
+
 
 def get_settings() -> Settings:
     """

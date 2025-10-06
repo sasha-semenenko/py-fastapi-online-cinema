@@ -7,11 +7,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, delete
 from sqlalchemy.orm import joinedload
 
-from config.dependencies import get_settings, get_jwt_auth_manager, get_accounts_email_notificator
-from config.settings import Settings
-from database.postgres_session import get_postgres_db
-from exception.security import BaseSecurityError
-from models.accounts import (
+from src.config.dependencies import get_settings, get_jwt_auth_manager, get_accounts_email_notificator
+from src.config.settings import Settings
+from src.database.postgres_session import get_postgres_db
+from src.exception.security import BaseSecurityError
+from src.models.accounts import (
     UserModel,
     UserGroupModel,
     UserGroupEnum,
@@ -19,8 +19,8 @@ from models.accounts import (
     RefreshTokenModel,
     PasswordResetTokenModel
 )
-from notifications.interfaces import EmailSenderInterface
-from schemas.accounts import (
+from src.notifications.interfaces import EmailSenderInterface
+from src.schemas.accounts import (
     UserRequestSchema,
     UserResponseSchema,
     MessageResponseSchema,
@@ -32,8 +32,8 @@ from schemas.accounts import (
     PasswordResetRequestSchema,
     PasswordResetRequestCompleteSchema
 )
-from security.interfaces import JWTAuthManagerInterface
-from security.token_manager import JWTAuthManager
+from src.security.interfaces import JWTAuthManagerInterface
+from src.security.token_manager import JWTAuthManager
 
 router = APIRouter()
 
@@ -69,7 +69,7 @@ router = APIRouter()
 async def register_user(
         data_user: UserRequestSchema,
         db: AsyncSession = Depends(get_postgres_db),
-    email_sender: EmailSenderInterface = Depends(get_accounts_email_notificator)
+        email_sender: EmailSenderInterface = Depends(get_accounts_email_notificator)
 ) -> UserResponseSchema:
     request = await db.execute(select(UserModel).where(UserModel.email == data_user.email))
     response_user_exist = request.scalar_one_or_none()

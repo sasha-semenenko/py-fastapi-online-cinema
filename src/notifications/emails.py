@@ -1,6 +1,6 @@
 import logging
-from exception.email import BaseEmailError
-from notifications.interfaces import EmailSenderInterface
+from src.exception.email import BaseEmailError
+from src.notifications.interfaces import EmailSenderInterface
 
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart

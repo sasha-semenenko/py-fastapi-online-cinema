@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, field_validator
-from validators import validate_password
+from src.validators import validate_password
 
 
 class BaseUserSchema(BaseModel):
@@ -58,7 +58,7 @@ class TokenRefreshResponseSchema(BaseModel):
     token_type: str = "bearer"
 
 
-class TokenRefreshRequestSchema(BaseUserSchema):
+class TokenRefreshRequestSchema(BaseModel):
     refresh_token: str
 
 class PasswordResetRequestCompleteSchema(BaseUserSchema):

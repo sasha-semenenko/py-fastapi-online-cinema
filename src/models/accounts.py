@@ -18,7 +18,7 @@ from sqlalchemy.orm.decl_api import DeclarativeBase
 
 from src.security.passwords import hash_password, verify_password
 from src.security.utils import generate_secure_token
-from validators import validate_password, validate_email
+from src.validators import validate_password, validate_email
 
 
 class Base(DeclarativeBase):

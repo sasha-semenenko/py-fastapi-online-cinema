@@ -27,7 +27,6 @@ class Settings(BaseSettings):
     EMAIL_USE_TLS: bool = os.getenv("EMAIL_USE_TLS", "False").lower() == "true"
 
 
-
     model_config = {
         "from_attributes": True
     }

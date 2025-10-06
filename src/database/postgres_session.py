@@ -1,7 +1,10 @@
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from models.accounts import Base
+from src.models.accounts import Base
 from src.config import settings
 
 
@@ -21,6 +24,20 @@ async def init_db():
         await conn.run_sync(Base.metadata.create_all)
 
 
-async def get_postgres_db():
+async def get_postgres_db() -> AsyncGenerator[AsyncSession, None]:
+    async with AsyncLocalSession() as session:
+        yield session
+
+
+@asynccontextmanager
+async def get_postgresql_db_contextmanager() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Provide an asynchronous database session using a context manager.
+
+    This function allows for managing the database session within a `with` statement.
+    It ensures that the session is properly initialized and closed after execution.
+
+    :return: An asynchronous generator yielding an AsyncSession instance.
+    """
     async with AsyncLocalSession() as session:
         yield session
