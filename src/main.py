@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from src.routes import accounts_router
+from src.routes import accounts_router, movies_router
 
 
 app = FastAPI(
@@ -8,3 +8,4 @@ app = FastAPI(
     version="0.1.0",
 )
 app.include_router(accounts_router, prefix="/accounts", tags=["accounts"])
+app.include_router(movies_router, prefix="/movies", tags=["movies"])
