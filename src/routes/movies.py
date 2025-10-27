@@ -15,7 +15,7 @@ router = APIRouter()
 
 
 @router.post(
-    "/movie/create/",
+    "/create/",
     response_model=MovieDetailResponseSchema,
     description="This endpoint allows a new client to add new movie to the database. "
                 "It accept details such as name, year, time, genres, stars, directors and other attributes."
@@ -183,7 +183,7 @@ async def get_movies_list(
 
 
 @router.get(
-    "movies/{movie_id}/",
+    "/movie/{movie_id}/",
     response_model=MovieDetailResponseSchema,
     summary="Get a movie by id",
     description="Fetch detail information about a specific movie by its unique ID."
@@ -221,13 +221,13 @@ async def get_movie_by_id(
     return MovieDetailResponseSchema.model_validate(movie)
 
 
-@router.delete("movies/{movie_id}/",
+@router.delete("/movie/{movie_id}/",
              summary="Delete movie with the given ID",
              description="Delete the specific movie from the database with the given ID."
                          "If the movie exist, it will be deleted. if it does not exist, "
                          "a 404 error will e return.",
              responses={
-                 200: {"description": "Movie deleted successfully."},
+                 204: {"description": "Movie deleted successfully."},
                  404: {
                      "description": "Movie not found",
                      "content": {
@@ -236,7 +236,8 @@ async def get_movie_by_id(
                          }
                      }
                  }
-             }
+             },
+             status_code=204
              )
 async def delete_movie_by_id(
         movie_id: int,
@@ -254,8 +255,7 @@ async def delete_movie_by_id(
     return {"detail": "Movie deleted successfully."}
 
 
-@router.patch("/movies/{movie_id}/",
-              response_model=MovieUpdateResponseSchema,
+@router.patch("/movie/{movie_id}/",
               summary="Update movie by the given ID.",
               description="Update details of a specific movie by its unique ID."
                           "This endpoint updates the details of an existing movie. If the movie with "
@@ -279,7 +279,11 @@ async def delete_movie_by_id(
                   },
               }
 )
-async def update_movie_by_id(movie_id: int, movie_data: MovieUpdateResponseSchema, db: AsyncSession = Depends(get_postgres_db)):
+async def update_movie_by_id(
+        movie_id: int,
+        movie_data: MovieUpdateResponseSchema,
+        db: AsyncSession = Depends(get_postgres_db)
+):
     request = select(MovieModel).where(MovieModel.id == movie_id)
     response = await db.execute(request)
     movie = response.scalars().first()

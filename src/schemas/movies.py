@@ -159,9 +159,11 @@ class MovieListResponseSchema(BaseModel):
 
     model_config = {
         "from_attributes": True,
-        "json_response_schema": [
-            movie_list_response_schema
-        ]
+        "json_response_schema": {
+            "example": [
+                movie_list_response_schema
+            ]
+        }
     }
 
 
@@ -179,6 +181,8 @@ class MovieUpdateResponseSchema(BaseModel):
     model_config = {
         "from_attributes": True,
         "json_schema_extra": {
-            movie_update_schema
+            "example": [
+                movie_update_schema
+            ]
         }
     }
