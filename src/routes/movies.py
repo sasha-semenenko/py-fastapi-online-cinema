@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from psycopg2 import IntegrityError
 
 from database.postgres_session import get_postgres_db
-from models.movies import MovieModel, CertificationModel, GenreModel, StarModel, DirectorModel
+from src.models.movies import MovieModel, CertificationModel, GenreModel, StarModel, DirectorModel
 from schemas.movies import MovieDetailResponseSchema, MovieCreateSchema, MovieListResponseSchema, MovieListItemSchema, \
     MovieUpdateResponseSchema
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -122,7 +122,7 @@ async def create_movie(
 
 
 @router.get(
-    "movies-list",
+    "/movies-list/",
     response_model=MovieListResponseSchema,
     summary="Get a paginated list of movies",
     description="This endpoints retrieves pagination movie list from the database."

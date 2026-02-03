@@ -1,11 +1,16 @@
+import asyncio
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy import MetaData
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
-from src.models.accounts import Base
+from src.models.base import Base
 from src.config import settings
+
+from src.models.accounts import UserModel, UserProfileModel
+from src.models.movies import MovieModel, MovieDirectorsModel, MovieGenresModel, MovieStarsModel
+from src.models.shopping_cart import CartModel, CartItemModel
 
 
 meta = MetaData()
@@ -41,3 +46,6 @@ async def get_postgresql_db_contextmanager() -> AsyncGenerator[AsyncSession, Non
     """
     async with AsyncLocalSession() as session:
         yield session
+
+#
+# asyncio.run(init_db())

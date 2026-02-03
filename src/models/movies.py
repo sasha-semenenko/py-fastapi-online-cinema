@@ -1,4 +1,7 @@
-from sqlalchemy.orm.decl_api import DeclarativeBase
+from __future__ import annotations
+from typing import List, TYPE_CHECKING
+
+from src.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import (
     Integer,
@@ -7,12 +10,15 @@ from sqlalchemy import (
     Text,
     DECIMAL,
     ForeignKey,
-    UniqueConstraint, Table, Column, types, UUID
+    UniqueConstraint,
+    Table,
+    Column,
+    types,
+    Boolean
 )
 
-
-class Base(DeclarativeBase):
-    ...
+if TYPE_CHECKING:
+    from src.models.shopping_cart import CartItemModel
 
 
 MovieGenresModel = Table(
@@ -23,7 +29,8 @@ MovieGenresModel = Table(
     Column(
         "genre_id",
         Base.metadata,
-        ForeignKey("genres_table.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+        ForeignKey("genres_table.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+    extend_existing=True
 )
 
 
@@ -33,7 +40,8 @@ MovieStarsModel = Table(
     Column("movie_id",
            ForeignKey("movies_table.id", ondelete="CASCADE"), primary_key=True, nullable=False),
     Column("stars_id",
-           ForeignKey("stars_table.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+           ForeignKey("stars_table.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+    extend_existing=True
 )
 
 
@@ -44,10 +52,12 @@ MovieDirectorsModel = Table(
            ForeignKey("movies_table.id", ondelete="CASCADE"), primary_key=True, nullable=False),
     Column("director_id",
            ForeignKey("directors_table.id", ondelete="CASCADE"), primary_key=True, nullable=False),
+    extend_existing=True
 )
 
 class GenreModel(Base):
     __tablename__ = "genres_table"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -63,6 +73,7 @@ class GenreModel(Base):
 
 class StarModel(Base):
     __tablename__ = "stars_table"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -78,6 +89,7 @@ class StarModel(Base):
 
 class DirectorModel(Base):
     __tablename__="directors_table"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -93,6 +105,7 @@ class DirectorModel(Base):
 
 class CertificationModel(Base):
     __tablename__="certifications_table"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String, unique=True, nullable=False)
@@ -119,6 +132,9 @@ class MovieModel(Base):
     certification_id: Mapped[int] = mapped_column(ForeignKey("certifications_table.id"), nullable=False)
     certification: Mapped["CertificationModel"] = relationship("CertificationModel", back_populates="movies")
 
+    cart_item: Mapped[list["CartItemModel"]] = relationship(back_populates="movie")
+    purchased: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
     genres: Mapped[list["GenreModel"]] = relationship(
         "GenreModel",
         secondary=MovieGenresModel,
@@ -137,7 +153,7 @@ class MovieModel(Base):
         back_populates="movies"
     )
 
-    __table_args__ = (UniqueConstraint("name", "year", "time", name="unique_movie_constraints"),)
+    __table_args__ = (UniqueConstraint("name", "year", "time", name="unique_movie_constraints"), {"extend_existing": True})
 
     @classmethod
     def default_order_by(cls):

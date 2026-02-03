@@ -2,7 +2,7 @@ import pytest
 
 from sqlalchemy import select
 
-from models.movies import GenreModel, StarModel, DirectorModel, CertificationModel, MovieModel
+from src.models.movies import GenreModel, StarModel, DirectorModel, CertificationModel, MovieModel
 
 
 @pytest.mark.asyncio

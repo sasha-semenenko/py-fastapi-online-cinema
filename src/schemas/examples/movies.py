@@ -20,19 +20,19 @@ director_schema_example = {
 
 
 movie_create_schema_example = {
-    "name": "Movie",
-    "year": 2045,
-    "time": 125,
-    "imdb": 1.4,
-    "votes": 3,
-    "meta_score": 4.5,
-    "gross": 3.6,
-    "description": "Some description for movie create schema",
-    "price": 135.6,
-    "certification": "New Certification",
-    "genres": ["New Comedy", "New Horror"],
-    "stars": ["New North", "New West"],
-    "directors": ["New First", "New Second"]
+    "name": "John Wick",
+    "year": 2022,
+    "time": 168,
+    "imdb": 1.9,
+    "votes": 5,
+    "meta_score": 3.5,
+    "gross": 3.9,
+    "description": "This movie about killing people",
+    "price": 325.6,
+    "certification": "High",
+    "genres": ["Horror", " Drama"],
+    "stars": ["North", "West"],
+    "directors": ["Keanu Reeves", "Michael Nyqvist"]
 }
 
 movie_detail_schema_example = {

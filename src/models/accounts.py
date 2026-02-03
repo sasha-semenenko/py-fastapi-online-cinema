@@ -1,7 +1,7 @@
-import enum
+from __future__ import annotations
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from datetime import datetime, date, timezone, timedelta
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from sqlalchemy import (
     Integer,
     Enum,
@@ -14,15 +14,16 @@ from sqlalchemy import (
     Text,
     UniqueConstraint
 )
-from sqlalchemy.orm.decl_api import DeclarativeBase
 
+from src.models.base import Base
 from src.security.passwords import hash_password, verify_password
 from src.security.utils import generate_secure_token
 from src.validators import validate_password, validate_email
 
+import enum
 
-class Base(DeclarativeBase):
-    ...
+if TYPE_CHECKING:
+    from src.models.shopping_cart import CartModel
 
 
 class UserGroupEnum(str, enum.Enum):
@@ -64,6 +65,8 @@ class UserModel(Base):
 
     group_id: Mapped[int] = mapped_column(ForeignKey("user_groups.id", ondelete="CASCADE"), nullable=False)
     group: Mapped["UserGroupModel"] = relationship("UserGroupModel", back_populates="users")
+
+    cart: Mapped["CartModel"] = relationship(back_populates="user")
 
     activation_token: Mapped[Optional["ActivationTokenModel"]] = relationship(
         "ActivationTokenModel",
