@@ -82,7 +82,12 @@ async def delete_movie_from_shopping_cart(
         db:AsyncSession = Depends(get_postgres_db)
 ) -> CartItemResponseSchema:
 
-    request = await db.execute(select(CartItemModel).options(joinedload(CartItemModel.movie)).where(CartItemModel.cart_id == cart_id).where(CartItemModel.movie_id == movie_id))
+    request = await db.execute(
+        select(CartItemModel)
+        .options(joinedload(CartItemModel.movie))
+        .where(CartItemModel.cart_id == cart_id)
+        .where(CartItemModel.movie_id == movie_id)
+    )
     cart_item = request.scalars().first()
 
     if not cart_item:

@@ -39,6 +39,7 @@ class GenderEnum(str, enum.Enum):
 
 class UserGroupModel(Base):
     __tablename__ = "user_groups"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     name: Mapped[UserGroupEnum] = mapped_column(Enum(UserGroupEnum), nullable=False, unique=True)
@@ -51,6 +52,7 @@ class UserGroupModel(Base):
 
 class UserModel(Base):
     __tablename__ = "users"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
@@ -150,7 +152,7 @@ class UserProfileModel(Base):
         unique=True)
     user: Mapped[UserModel] = relationship("UserModel", back_populates="profile")
 
-    __table_args__ = (UniqueConstraint("user_id"),)
+    __table_args__ = (UniqueConstraint("user_id"), {"extend_existing": True},)
 
     def __repr__(self):
         return (
@@ -183,7 +185,7 @@ class ActivationTokenModel(TokenBaseModel):
 
     user: Mapped[UserModel] = relationship("UserModel", back_populates="activation_token")
 
-    __table_args__ = (UniqueConstraint("user_id"),)
+    __table_args__ = (UniqueConstraint("user_id"), {"extend_existing": True},)
 
     def __repr__(self):
         return f"<ActivationTokenModel(id={self.id}, token={self.token}, expires_at={self.expires_at})>"
@@ -194,7 +196,7 @@ class PasswordResetTokenModel(TokenBaseModel):
 
     user: Mapped[UserModel] = relationship("UserModel", back_populates="password_reset_token")
 
-    __table_args__ = (UniqueConstraint("user_id"),)
+    __table_args__ = (UniqueConstraint("user_id"), {"extend_existing": True},)
 
     def __repr__(self):
         return f"<PasswordResetTokenModel(id={self.id}, token={self.token}, expires_at={self.expires_at})>"
@@ -202,6 +204,7 @@ class PasswordResetTokenModel(TokenBaseModel):
 
 class RefreshTokenModel(TokenBaseModel):
     __tablename__ = "refresh_tokens"
+    __table_args__ = {"extend_existing": True}
 
     user: Mapped[UserModel] = relationship("UserModel", back_populates="refresh_tokens")
     token: Mapped[str] = mapped_column(
