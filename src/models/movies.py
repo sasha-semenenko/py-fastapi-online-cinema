@@ -1,6 +1,7 @@
 from __future__ import annotations
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
+from src.models.order import OrderItemModel
 from src.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import (
@@ -134,6 +135,8 @@ class MovieModel(Base):
 
     cart_item: Mapped[list["CartItemModel"]] = relationship(back_populates="movie")
     purchased: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+
+    order_item: Mapped["OrderItemModel"] = relationship(back_populates="movie")
 
     genres: Mapped[list["GenreModel"]] = relationship(
         "GenreModel",

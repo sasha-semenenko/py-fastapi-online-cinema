@@ -24,6 +24,7 @@ import enum
 
 if TYPE_CHECKING:
     from src.models.shopping_cart import CartModel
+    from src.models.order import OrderModel
 
 
 class UserGroupEnum(str, enum.Enum):
@@ -69,6 +70,8 @@ class UserModel(Base):
     group: Mapped["UserGroupModel"] = relationship("UserGroupModel", back_populates="users")
 
     cart: Mapped["CartModel"] = relationship(back_populates="user")
+
+    orders: Mapped["OrderModel"] = relationship(back_populates="user")
 
     activation_token: Mapped[Optional["ActivationTokenModel"]] = relationship(
         "ActivationTokenModel",

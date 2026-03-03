@@ -7,7 +7,7 @@ from src.models.movies import MovieModel
 from src.models.shopping_cart import CartModel, CartItemModel
 from src.schemas.shopping_cart import CartItemResponseSchema
 from src.database.postgres_session import get_postgres_db
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 

@@ -29,10 +29,10 @@ movie_create_schema_example = {
     "gross": 3.9,
     "description": "This movie about killing people",
     "price": 325.6,
-    "certification": "High",
-    "genres": ["Horror", " Drama"],
-    "stars": ["North", "West"],
-    "directors": ["Keanu Reeves", "Michael Nyqvist"]
+    "certification": "New Certification",
+    "genres": ["Genre"],
+    "stars": ["Star"],
+    "directors": ["Director"]
 }
 
 movie_detail_schema_example = {

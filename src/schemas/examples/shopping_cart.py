@@ -1,4 +1,4 @@
-from schemas.examples.movies import movie_list_item_schema, genre_schema_example
+from schemas.examples.movies import genre_schema_example
 
 user_schema = {
     "id": 1,

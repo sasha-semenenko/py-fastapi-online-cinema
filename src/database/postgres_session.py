@@ -11,6 +11,7 @@ from src.config import settings
 from src.models.accounts import UserModel, UserProfileModel
 from src.models.movies import MovieModel, MovieDirectorsModel, MovieGenresModel, MovieStarsModel
 from src.models.shopping_cart import CartModel, CartItemModel
+from src.models.order import OrderModel, OrderItemModel
 
 
 meta = MetaData()
