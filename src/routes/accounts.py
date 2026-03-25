@@ -570,3 +570,28 @@ async def password_reset_complete(
     )
 
     return MessageResponseSchema(message="Password reset successfully.")
+
+
+@router.get("/me/", summary="Get current authorized user")
+async def get_current_user(
+        refresh_token: str,
+        db: AsyncSession = Depends(get_postgres_db),
+        jwt_manager: JWTAuthManager = Depends(get_jwt_auth_manager)
+):
+
+    try:
+        decode_refresh_token = jwt_manager.decode_refresh_token(refresh_token)
+        user_id = decode_refresh_token.get("user_id")
+    except BaseSecurityError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        )
+
+    request = await db.execute(select(UserModel).where(UserModel.id == user_id))
+    user = request.scalars().first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authorized!")
+
+    return user

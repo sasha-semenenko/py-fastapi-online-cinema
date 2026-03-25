@@ -12,6 +12,8 @@ if TYPE_CHECKING:
     from src.models.accounts import UserModel
     from src.models.movies import MovieModel
     from src.models.shopping_cart import CartModel
+    from src.models.payments import PaymentModel
+    from src.models.payments import PaymentItemModel
 
 
 class OrderEnumStatus(str, enum.Enum):
@@ -36,6 +38,8 @@ class OrderModel(Base):
     cart: Mapped["CartModel"] = relationship(back_populates="order")
     cart_id: Mapped[int] = mapped_column(ForeignKey("cart_table.id"))
 
+    payments: Mapped["PaymentModel"] = relationship(back_populates="orders")
+
 
 class OrderItemModel(Base):
     __tablename__ = "order_items"
@@ -48,3 +52,5 @@ class OrderItemModel(Base):
 
     order: Mapped["OrderModel"] = relationship(back_populates="order_item")
     movie: Mapped["MovieModel"] = relationship(back_populates="order_item")
+
+    payment_items: Mapped["PaymentItemModel"] = relationship(back_populates="order_item")
